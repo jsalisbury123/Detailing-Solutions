@@ -1,0 +1,167 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Service Calendar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .day {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .day h3 {
+      margin-top: 0;
+      font-size: 1.1em;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+    }
+    .entry {
+      background: #e0f7fa;
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    .entry button {
+      margin-left: 5px;
+    }
+    form {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: auto;
+    }
+    form input, form select, form button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vehicle Service Calendar</h1>
+  <form id="entryForm">
+    <label>Year:</label>
+    <input type="text" id="year" required>
+
+    <label>Make:</label>
+    <input type="text" id="make" required>
+
+    <label>Model:</label>
+    <input type="text" id="model" required>
+
+    <label>VIN:</label>
+    <input type="text" id="vin" required>
+
+    <label>Service:</label>
+    <select id="service">
+      <option value="Detailing">Detailing</option>
+      <option value="Oil Change">Oil Change</option>
+      <option value="Tire Rotation">Tire Rotation</option>
+      <option value="Brake Inspection">Brake Inspection</option>
+      <option value="Battery Check">Battery Check</option>
+    </select>
+
+    <label>Day of Week:</label>
+    <select id="day">
+      <option value="Monday">Monday</option>
+      <option value="Tuesday">Tuesday</option>
+      <option value="Wednesday">Wednesday</option>
+      <option value="Thursday">Thursday</option>
+      <option value="Friday">Friday</option>
+      <option value="Saturday">Saturday</option>
+      <option value="Sunday">Sunday</option>
+    </select>
+
+    <button type="submit">Add Entry</button>
+  </form>
+
+  <div class="calendar" id="calendar">
+    <!-- Days will be added here dynamically -->
+  </div>
+
+  <script>
+    const calendar = document.getElementById("calendar");
+    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const entries = JSON.parse(localStorage.getItem("vehicleEntries")) || {};
+
+    function renderCalendar() {
+      calendar.innerHTML = "";
+      daysOfWeek.forEach(day => {
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "day";
+        dayDiv.innerHTML = `<h3>${day}</h3>`;
+
+        const dayEntries = entries[day] || [];
+        dayEntries.forEach((entry, index) => {
+          const entryDiv = document.createElement("div");
+          entryDiv.className = "entry";
+          entryDiv.innerHTML = `
+            ${entry.year} ${entry.make} ${entry.model} (${entry.vin})<br>
+            <strong>${entry.service}</strong>
+            <button onclick="editEntry('${day}', ${index})">Edit</button>
+            <button onclick="deleteEntry('${day}', ${index})">Delete</button>
+          `;
+          dayDiv.appendChild(entryDiv);
+        });
+
+        calendar.appendChild(dayDiv);
+      });
+    }
+
+    document.getElementById("entryForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const year = document.getElementById("year").value;
+      const make = document.getElementById("make").value;
+      const model = document.getElementById("model").value;
+      const vin = document.getElementById("vin").value;
+      const service = document.getElementById("service").value;
+      const day = document.getElementById("day").value;
+
+      const entry = { year, make, model, vin, service };
+      entries[day] = entries[day] || [];
+      entries[day].push(entry);
+      localStorage.setItem("vehicleEntries", JSON.stringify(entries));
+      renderCalendar();
+      e.target.reset();
+    });
+
+    function deleteEntry(day, index) {
+      entries[day].splice(index, 1);
+      localStorage.setItem("vehicleEntries", JSON.stringify(entries));
+      renderCalendar();
+    }
+
+    function editEntry(day, index) {
+      const entry = entries[day][index];
+      document.getElementById("year").value = entry.year;
+      document.getElementById("make").value = entry.make;
+      document.getElementById("model").value = entry.model;
+      document.getElementById("vin").value = entry.vin;
+      document.getElementById("service").value = entry.service;
+      document.getElementById("day").value = day;
+
+      deleteEntry(day, index);
+    }
+
+    renderCalendar();
+  </script>
+</body>
+</html
